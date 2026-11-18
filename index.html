@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gato y Ratón</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b58863">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f4f1ea;--fg:#222;--mut:#666;--card:#fff;--bd:#d6d0c4;--light:#f0d9b5;--dark:#b58863;--frame:#7a5a3c;--hint:rgba(40,160,70,.75);--sel:#ffd54a;--acc:#2c6fbb;--last:rgba(255,213,74,.45)}
+:root[data-theme=dark]{--bg:#1c1d22;--fg:#eee;--mut:#aaa;--card:#2a2c33;--bd:#3d4049;--light:#8b7a64;--dark:#5a4636;--frame:#3e2f22;--acc:#6aa6ee;--last:rgba(255,213,74,.35);color-scheme:dark}
+#board[data-b=azul]{--light:#dce6f2;--dark:#6f95c4;--frame:#4a6fa0}
+#board[data-b=verde]{--light:#eeeed2;--dark:#769656;--frame:#566f3d}
+#board[data-b=rosa]{--light:#f7e1ea;--dark:#d28aa5;--frame:#a8627e}
+#board[data-b=gris]{--light:#e6e6e6;--dark:#8d8d8d;--frame:#666}
+#board[data-b=madera]{--light:#c9a46e;--dark:#7a4b24;--frame:#4e2f15}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 12px}
+h1{font-size:1.3rem;margin:0;white-space:nowrap}
+.ic{display:flex;gap:6px}
+button{min-height:44px;font:inherit;color:var(--fg);background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:8px 12px;cursor:pointer}
+.ic button{padding:6px 9px}
+button:disabled{opacity:.4;cursor:default}
+button.main{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.hide{display:none!important}
+#top{padding:0 10px 4px;max-width:560px;margin:0 auto;width:100%}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+.seg{flex-wrap:nowrap}
+.seg button{flex:1;min-height:38px;padding:6px 3px;font-size:.86rem;white-space:nowrap}
+.sm{min-height:34px;padding:5px 10px;font-size:.9rem}
+#sub{margin-top:6px}
+input{font:inherit;font-size:.9rem;color:var(--fg);background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:6px 10px;width:7em;text-transform:uppercase;letter-spacing:2px}
+.mut{color:var(--mut);font-size:.88rem;margin:4px 0 0;text-align:center}
+.mut b{color:var(--fg);letter-spacing:3px;font-size:1.05rem}
+#hud{display:flex;justify-content:space-between;gap:10px;padding:2px 14px 4px;font-weight:600;max-width:560px;margin:0 auto;width:100%}
+#score{font-variant-numeric:tabular-nums;white-space:nowrap}
+#wrap{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+#board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:4px solid var(--frame);border-radius:6px;overflow:hidden}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;line-height:1;font-size:var(--fs,32px);cursor:pointer}
+.sq.l{background:var(--light)}.sq.d{background:var(--dark)}
+.sq.end{box-shadow:inset 0 -4px 0 var(--acc)}
+.sq.last::before{content:"";position:absolute;inset:0;background:var(--last)}
+.sq.can{box-shadow:inset 0 0 0 3px rgba(255,213,74,.7)}
+.sq.sel{box-shadow:inset 0 0 0 4px var(--sel)}
+.sq.hint::after{content:"";width:30%;height:30%;border-radius:50%;background:var(--hint);position:absolute}
+.sq span{position:relative}
+#bar{display:flex;gap:8px;justify-content:center;padding:6px}
+.pop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--card);border:2px solid var(--fg);border-radius:16px;padding:16px 20px;text-align:center;box-shadow:0 8px 30px #0005;z-index:2}
+.pop b{display:block;font-size:1.25rem;margin-bottom:10px}
+#rules{max-width:560px;margin:0 auto;width:100%;padding:0 14px 6px;max-height:24vh;overflow:auto}
+#rules summary{cursor:pointer;color:var(--mut);text-align:center;font-size:.92rem}
+#rules p{text-align:left}
+@media (max-height:600px){#rules{display:none}}
+@media (max-height:520px){header{padding:2px 10px}h1{font-size:1.05rem}.seg button{min-height:32px}#bar{padding:3px}button{min-height:36px;padding:5px 10px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Gato y Ratón</h1>
+  <div class="ic">
+    <button id="bSnd" title="Sonido">🔊</button>
+    <button id="bBrd" title="Colores del tablero">🎨</button>
+    <button id="bPcs" title="Fichas">🐾</button>
+    <button id="bThm" title="Tema claro/oscuro">🌙</button>
+  </div>
+</header>
+
+<div id="top">
+  <div class="row seg">
+    <button id="tMouse"></button><button id="tCats"></button><button id="tLocal">👥 2 jug.</button><button id="tOn">🌐 Online</button>
+  </div>
+  <div id="sub">
+    <div id="subAI" class="row hide"><button id="d0" class="sm">Fácil</button><button id="d1" class="sm sel">Normal</button></div>
+    <div id="subOn" class="hide">
+      <div class="row" id="onCtl"><button id="bHost" class="sm">Crear sala</button><input id="inCode" maxlength="5" placeholder="CÓDIGO"><button id="bJoin" class="sm">Unirse</button></div>
+      <p class="mut" id="onSt"></p>
+    </div>
+  </div>
+</div>
+
+<div id="hud"><span id="st"></span><span id="score"></span></div>
+<div id="wrap"><div id="board"></div>
+  <div id="end" class="pop hide"><b id="endTx"></b><button class="main" id="bAgain">Nueva partida</button></div>
+  <div id="ask" class="pop hide"><b>Tu rival propone nueva partida</b><div class="row"><button class="main" id="bYes">Aceptar</button><button id="bNo">Seguir jugando</button></div></div>
+</div>
+<div id="bar"><button id="bUndo">↶ Deshacer</button><button id="bNew" class="main">Nueva partida</button></div>
+<details id="rules"><summary>Reglas</summary>
+  <p class="mut">El ratón se coloca en una casilla oscura de la fila de arriba. Los 4 gatos empiezan en la fila de abajo y solo avanzan una casilla en diagonal hacia arriba. El ratón se mueve una casilla en diagonal en cualquier dirección. Mueven primero los gatos. No hay capturas.</p>
+  <p class="mut">El ratón gana si llega a la fila de abajo (marcada en azul) o si los gatos se quedan sin movimientos. Los gatos ganan si encierran al ratón.</p>
+  <p class="mut">Gatos: toca un gato y luego su destino, o toca directamente la casilla si solo un gato puede ir allí. La casilla amarilla marca la última jugada. Online: los papeles se alternan en cada partida.</p>
+</details>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+const $=s=>document.getElementById(s),N=8,root=document.documentElement;
+const PS=[['🐱','🐭','Gatos','Ratón'],['🐶','🐰','Perros','Conejo'],['🦁','🐁','Leones','Ratón'],['🦅','🐍','Águilas','Serpiente'],['⚪','🔴','Blancas','Roja']];
+const BOARDS=[['','Clásico'],['azul','Azul'],['verde','Verde'],['rosa','Rosa'],['gris','Gris'],['madera','Madera']];
+let P=PS[0],pcs=0,brd=0,snd=true,ac=null;
+let mode='',tab='',diff=1,G,H=[],over=false,busy=false,sel=null,scores=[0,0];
+let gen=0,gno=0,asked=false,note='',myRole='cats',isHost=false,peer=null,conn=null;
+const later=(f,ms)=>{const g=gen;setTimeout(()=>{if(g===gen)f()},ms)};
+const store=(k,v)=>{try{localStorage.setItem('gr-'+k,v)}catch(e){}},load=k=>{try{return localStorage.getItem('gr-'+k)}catch(e){return null}};
+
+/* ---------- ajustes ---------- */
+function setTheme(t){root.dataset.theme=t;$('bThm').textContent=t==='dark'?'☀️':'🌙';store('theme',t)}
+setTheme(load('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+function setSnd(v){snd=v;$('bSnd').textContent=v?'🔊':'🔇';store('snd',v?1:0)}
+setSnd(load('snd')!=='0');
+function setBoard(i,show){brd=i;$('board').dataset.b=BOARDS[i][0];$('bBrd').title='Tablero: '+BOARDS[i][1];store('board',i);if(show){note='tablero '+BOARDS[i][1].toLowerCase();status()}}
+function setPieces(i,show){pcs=i;P=PS[i];$('bPcs').textContent=P[0];store('pcs',i);
+  $('tMouse').textContent=P[1]+' vs IA';$('tCats').textContent=P[0]+' vs IA';
+  if(G){if(show)note='fichas '+P[2].toLowerCase()+' / '+P[3].toLowerCase();render();status();roleText()}}
+setBoard(+load('board')||0);setPieces(+load('pcs')||0);
+$('bThm').onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
+$('bSnd').onclick=()=>{setSnd(!snd);beep(660)};
+$('bBrd').onclick=()=>setBoard((brd+1)%BOARDS.length,true);
+$('bPcs').onclick=()=>setPieces((pcs+1)%PS.length,true);
+
+function beep(f,d=.1,t0=0){if(!snd)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+t0;o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d)}catch(e){}}
+
+/* ---------- reglas ---------- */
+// G = {M:[r,c] ratón (null hasta colocarlo), C:[[r,c]x4] gatos, turn:'cats'|'mouse'}
+const occ=(s,r,c)=>(s.M&&s.M[0]===r&&s.M[1]===c)||s.C.some(x=>x[0]===r&&x[1]===c);
+const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+function moves(s){const m=[];
+  if(s.turn==='cats'){s.C.forEach((x,i)=>{for(const dc of[-1,1]){const r=x[0]-1,c=x[1]+dc;if(inB(r,c)&&!occ(s,r,c))m.push({i,r,c})}})}
+  else for(const[dr,dc]of[[1,-1],[1,1],[-1,-1],[-1,1]]){const r=s.M[0]+dr,c=s.M[1]+dc;if(inB(r,c)&&!occ(s,r,c))m.push({i:-1,r,c})}
+  return m}
+function doM(s,m){const prev=m.i<0?s.M:s.C[m.i];if(m.i<0)s.M=[m.r,m.c];else s.C[m.i]=[m.r,m.c];s.turn=s.turn==='cats'?'mouse':'cats';return prev}
+function undoM(s,m,prev){if(m.i<0)s.M=prev;else s.C[m.i]=prev;s.turn=s.turn==='cats'?'mouse':'cats'}
+function result(s){if(s.M[0]===N-1)return'mouse';if(!moves(s).length)return s.turn==='cats'?'mouse':'cats';return null}
+const actor=()=>G.M?G.turn:'mouse'; // quien tiene que actuar (el ratón se coloca primero)
+
+/* ---------- IA ---------- */
+// Valoración desde el punto de vista de los gatos: distancia del ratón a la fila de abajo,
+// región libre si está encerrado y gatos que ya han quedado por detrás del ratón.
+function evalS(s){const seen=new Uint8Array(64),q=[s.M[0]*8+s.M[1]];seen[q[0]]=1;let d=-1,dist=0,size=0,lvl=[q[0]];
+  while(lvl.length){const nx=[];for(const v of lvl){size++;const r=v>>3,c=v&7;if(r===N-1&&d<0)d=dist;
+      for(const[dr,dc]of[[1,-1],[1,1],[-1,-1],[-1,1]]){const R=r+dr,C=c+dc,k=R*8+C;if(inB(R,C)&&!seen[k]&&!s.C.some(x=>x[0]===R&&x[1]===C)){seen[k]=1;nx.push(k)}}}
+    lvl=nx;dist++}
+  let passed=0;for(const x of s.C)if(x[0]<s.M[0])passed++;
+  if(d<0)return 400-size*6-passed*10;      // ratón encerrado: cuanto menos espacio, mejor
+  return d*14-passed*35-size*.5}
+let deadline=0,nodes=0;const TO={};
+function mm(s,d,a,b,ply){if((++nodes&1023)===0&&performance.now()>deadline)throw TO;
+  const r=result(s);if(r)return r==='cats'?10000-ply:-10000+ply;if(d===0)return evalS(s);
+  const ms=moves(s),max=s.turn==='cats';let v=max?-1e9:1e9;
+  for(const m of ms){const p=doM(s,m),x=mm(s,d-1,a,b,ply+1);undoM(s,m,p);
+    if(max){if(x>v)v=x;if(v>a)a=v}else{if(x<v)v=x;if(v<b)b=v}if(a>=b)break}
+  return v}
+function search(s,maxD,ms){const max=s.turn==='cats';let list=moves(s).map(m=>({m,v:0})),best=list[0].m;
+  deadline=performance.now()+ms;nodes=0;
+  try{for(let d=1;d<=maxD;d++){
+      for(const e of list){const p=doM(s,e.m);try{e.v=mm(s,d-1,-1e9,1e9,1)+Math.random()*.4}finally{undoM(s,e.m,p)}}
+      list.sort((x,y)=>max?y.v-x.v:x.v-y.v);best=list[0].m;if(Math.abs(list[0].v)>9000)break}}
+  catch(e){if(e!==TO)throw e}
+  return best}
+function aiAction(){const s={M:G.M&&G.M.slice(),C:G.C.map(x=>x.slice()),turn:G.turn};
+  if(!s.M){ // colocar el ratón: la columna que peor deja a los gatos
+    let bc=1,bv=1e9;for(const c of[1,3,5,7]){s.M=[0,c];s.turn='cats';const v=evalS(s)+Math.random()*8;if(v<bv){bv=v;bc=c}}return{k:'place',c:bc}}
+  const ms=moves(s);
+  if(!diff&&Math.random()<.3)return{k:'mv',...ms[Math.floor(Math.random()*ms.length)]};
+  const m=diff?search(s,16,450):search(s,2,100);return{k:'mv',i:m.i,r:m.r,c:m.c}}
+function aiPlay(){if(over||busy||mode!=='ai'||actor()===hs())return;busy=true;status();
+  later(()=>{const a=aiAction();busy=false;act(a,'ai')},350)}
+
+/* ---------- flujo ---------- */
+const hs=()=>tab==='mouse'?'mouse':'cats'; // lado humano contra la IA
+const myTurn=()=>!over&&!busy&&(mode==='local'||(mode==='ai'&&actor()===hs())||(mode==='online'&&conn&&conn.open&&actor()===myRole));
+function legal(a){if(!a)return false;
+  if(a.k==='place')return!G.M&&[1,3,5,7].includes(a.c);
+  return!!G.M&&moves(G).some(m=>m.i===a.i&&m.r===a.r&&m.c===a.c)}
+function act(a,src){if(over||!legal(a))return;
+  const who=actor();H.push({M:G.M&&G.M.slice(),C:G.C.map(x=>x.slice()),turn:G.turn,last:G.last,who});
+  if(a.k==='place'){G.M=[0,a.c];G.turn='cats';G.last=null;beep(440)}
+  else{const from=a.i<0?G.M:G.C[a.i];G.last=[from[0]*8+from[1],a.r*8+a.c];doM(G,a);beep(who==='cats'?520:330)}
+  sel=null;note='';
+  if(src==='human'&&mode==='online'&&conn&&conn.open)conn.send({t:'a',a,n:gno});
+  const r=G.M&&result(G);
+  if(r)finish(r);else status();
+  render();
+  if(!over&&mode==='ai'&&actor()!==hs())later(aiPlay,300)}
+function slotOf(side){return mode==='local'?(side==='cats'?0:1):mode==='ai'?(side===hs()?0:1):(side===myRole?0:1)}
+function finish(w){over=true;asked=false;hideAsk();scores[slotOf(w)]++;
+  const nm=w==='cats'?P[0]+' Ganan los '+P[2].toLowerCase():P[1]+' Gana '+(P[3]==='Roja'?'la roja':'el '+P[3].toLowerCase());
+  const mine=mode==='local'||slotOf(w)===0;
+  let tx=mode==='local'?nm:(mine?'¡Has ganado! ':'Has perdido · ')+(mode==='ai'&&!mine?'gana la IA':nm);
+  if(mode!=='local'&&mine)tx+=' · '+nm;
+  if(mine){[523,659,784,1047].forEach((f,i)=>beep(f,.2,i*.12))}else[392,330,262].forEach((f,i)=>beep(f,.25,i*.15));
+  $('endTx').textContent=tx;$('end').classList.remove('hide');status()}
+function canUndo(){return mode!=='online'&&!busy&&H.length>0&&(mode==='local'||H.some(h=>h.who===hs()))}
+function undo(){if(!canUndo())return;gen++;
+  if(over){over=false;$('end').classList.add('hide');const w=G.M[0]===N-1||G.turn==='cats'?'mouse':'cats';scores[slotOf(w)]--}
+  if(mode==='ai')while(H.length&&H[H.length-1].who!==hs())H.pop(); // quita la respuesta de la IA
+  const h=H.pop();if(h){G.M=h.M;G.C=h.C;G.turn=h.turn;G.last=h.last}
+  sel=null;note='';status();render()}
+function status(){const a=G&&actor();let t;
+  if(over)t='Fin de la partida';
+  else if(asked)t='Propuesta de nueva partida enviada…';
+  else if(mode==='online'&&!(conn&&conn.open))t='Crea una sala o únete a una';
+  else if(!G.M){const me=mode==='local'||(mode==='ai'&&hs()==='mouse')||(mode==='online'&&myRole==='mouse');
+    t=me?P[1]+' Coloca '+(P[3]==='Roja'?'la roja':'el '+P[3].toLowerCase())+' en una casilla oscura de arriba':(mode==='ai'?'La IA coloca '+P[1]:'El rival coloca '+P[1])}
+  else{const e=a==='cats'?P[0]:P[1];
+    if(mode==='local')t='Turno: '+e+' '+(a==='cats'?P[2]:P[3]);
+    else if(mode==='ai')t=a===hs()?'Tu turno '+e:'Piensa la IA… '+e;
+    else t=a===myRole?'Tu turno '+e:'Turno del rival '+e}
+  if(note)t+=' · '+note;
+  $('st').textContent=t;
+  const n=mode==='local'?[P[0],P[1]]:mode==='ai'?['Tú','IA']:['Tú','Rival'];
+  $('score').textContent=`${n[0]} ${scores[0]} – ${scores[1]} ${n[1]}`;
+  $('bUndo').classList.toggle('hide',mode==='online');$('bUndo').disabled=!canUndo();
+  $('bNew').disabled=mode==='online'&&(asked||!(conn&&conn.open))}
+function newGame(){gen++;gno++;G={M:null,C:[[7,0],[7,2],[7,4],[7,6]],turn:'cats',last:null};H=[];over=false;busy=false;sel=null;asked=false;note='';
+  if(mode==='online')myRole=((isHost?0:1)+gno)%2===1?'cats':'mouse';
+  $('end').classList.add('hide');hideAsk();roleText();render();status();
+  if(mode==='ai'&&hs()==='cats')later(aiPlay,400)}
+function startGame(m){mode=m;scores=[0,0];gno=0;newGame()}
+function again(){if(mode!=='online'){newGame();return}
+  if(!conn||!conn.open)return;
+  if(over){conn.send({t:'r',n:gno});newGame()}else if(!asked){asked=true;conn.send({t:'rq'});status()}}
+const showAsk=()=>$('ask').classList.remove('hide'),hideAsk=()=>$('ask').classList.add('hide');
+
+/* ---------- tablero ---------- */
+const sqs=[];
+for(let k=0;k<64;k++){const d=document.createElement('div');d.className='sq '+(((k>>3)+(k&7))%2?'d':'l');d.appendChild(document.createElement('span'));d.onclick=()=>tap(k>>3,k&7);$('board').appendChild(d);sqs.push(d)}
+function render(){if(!G)return;const mine=myTurn(),a=actor();let hint=[],can=[];
+  if(mine){if(!G.M)hint=[1,3,5,7].map(c=>c);
+    else{const ms=moves(G);if(a==='cats'){can=[...new Set(ms.map(m=>m.i))];if(sel!=null)hint=ms.filter(m=>m.i===sel).map(m=>m.r*8+m.c)}else hint=ms.map(m=>m.r*8+m.c)}}
+  for(let k=0;k<64;k++){const r=k>>3,c=k&7,d=sqs[k];let tx='';
+    const ci=G.C.findIndex(x=>x[0]===r&&x[1]===c);if(ci>=0)tx=P[0];else if(G.M&&G.M[0]===r&&G.M[1]===c)tx=P[1];
+    d.firstChild.textContent=tx;
+    d.classList.toggle('end',r===N-1);
+    d.classList.toggle('last',!!G.last&&G.last.includes(k));
+    d.classList.toggle('sel',ci>=0&&ci===sel);
+    d.classList.toggle('can',ci>=0&&ci!==sel&&can.includes(ci));
+    d.classList.toggle('hint',hint.includes(k))}}
+function tap(r,c){if(!myTurn())return;
+  if(!G.M){if(r===0&&c%2===1)act({k:'place',c},'human');return}
+  const ms=moves(G);
+  if(actor()==='mouse'){const m=ms.find(m=>m.r===r&&m.c===c);if(m)act(m,'human');return}
+  const ci=G.C.findIndex(x=>x[0]===r&&x[1]===c);
+  if(ci>=0&&ms.some(m=>m.i===ci)){sel=ci===sel?null:ci;render();return}
+  let m=sel!=null&&ms.find(m=>m.i===sel&&m.r===r&&m.c===c);
+  if(!m){const opts=ms.filter(m=>m.r===r&&m.c===c);if(opts.length===1)m=opts[0];else if(opts.length>1){note='dos gatos pueden ir ahí: toca primero uno';status();return}}
+  if(m)act(m,'human')}
+function resize(){const w=$('wrap'),s=Math.floor(Math.min(w.clientWidth-12,w.clientHeight-8,560));if(s<=0)return;
+  const b=$('board');b.style.width=b.style.height=s+'px';b.style.setProperty('--fs',Math.floor(s/8*.68)+'px')}
+addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(resize).observe($('wrap'));
+
+/* ---------- modos ---------- */
+function setTab(t){if(t===tab&&t==='online')return;
+  if(tab==='online'&&t!=='online')leaveOnline();
+  tab=t;for(const[id,v]of[['tMouse','mouse'],['tCats','cats'],['tLocal','local'],['tOn','online']])$(id).classList.toggle('sel',v===t);
+  $('subAI').classList.toggle('hide',t!=='mouse'&&t!=='cats');$('subOn').classList.toggle('hide',t!=='online');
+  if(t==='online'){$('onCtl').classList.remove('hide');$('onSt').textContent=ON_HELP}
+  else startGame(t==='local'?'local':'ai');
+  requestAnimationFrame(resize)}
+function setDiff(v){diff=v;$('d0').classList.toggle('sel',!v);$('d1').classList.toggle('sel',!!v);startGame('ai')}
+
+/* ---------- online ---------- */
+const ON_HELP='Crea una sala y pasa el código, o escribe el código de tu rival.';
+function roleText(){if(mode==='online'&&conn&&conn.open)$('onSt').textContent='Conectado · esta partida llevas '+(myRole==='cats'?P[0]+' '+P[2]:P[1]+' '+P[3])}
+function leaveOnline(){const c=conn;conn=null;if(c){try{c.close()}catch(e){}}if(peer){try{peer.destroy()}catch(e){}}peer=null;$('onCtl').classList.remove('hide');$('onSt').textContent=ON_HELP}
+function begin(){$('onCtl').classList.add('hide');startGame('online')}
+function wire(c){
+  c.on('open',()=>{if(isHost){c.send({t:'hi'});begin()}});
+  c.on('data',d=>{if(c!==conn||!d)return;
+    if(d.t==='hi'){if(!isHost)begin()}
+    else if(d.t==='busy'){conn=null;try{c.close()}catch(e){}$('onSt').textContent='Esa sala ya tiene dos jugadores.'}
+    else if(d.t==='a'){if(mode==='online'&&d.n===gno&&actor()!==myRole)act(d.a,'remote')}
+    else if(d.t==='r'){if(d.n===gno)newGame()}
+    else if(d.t==='rq'){if(!over)showAsk()}
+    else if(d.t==='no'){asked=false;note='tu rival prefiere seguir';status()}});
+  c.on('close',()=>{if(c!==conn)return;conn=null;
+    if(mode==='online'){over=true;asked=false;hideAsk();status();$('st').textContent='El rival se ha desconectado';render();
+      $('onCtl').classList.remove('hide');$('onSt').textContent='Rival desconectado. '+ON_HELP;if(peer){try{peer.destroy()}catch(e){}peer=null}}})}
+function noPeer(){if(typeof Peer!=='undefined')return false;$('onSt').textContent='No se pudo cargar PeerJS (¿sin conexión?).';return true}
+function host(){if(noPeer())return;isHost=true;conn=null;const code=Math.random().toString(36).slice(2,7).toUpperCase().padEnd(5,'X');
+  if(peer)peer.destroy();peer=new Peer('gatoraton-'+code);$('onSt').textContent='Creando sala…';
+  peer.on('open',()=>{$('onSt').innerHTML='Pasa este código a tu rival: <b>'+code+'</b> · esperando…'});
+  peer.on('connection',c=>{if(conn){c.on('open',()=>{c.send({t:'busy'});setTimeout(()=>{try{c.close()}catch(e){}},500)});return}conn=c;wire(c)});
+  peer.on('error',e=>{if(e.type==='unavailable-id')host();else $('onSt').textContent='Error de conexión: '+e.type})}
+function join(){if(noPeer())return;const code=$('inCode').value.trim().toUpperCase();if(code.length<5){$('onSt').textContent='Escribe el código de 5 caracteres.';return}
+  isHost=false;conn=null;if(peer)peer.destroy();$('onSt').textContent='Conectando…';peer=new Peer();
+  peer.on('open',()=>{conn=peer.connect('gatoraton-'+code,{reliable:true});wire(conn)});
+  peer.on('error',e=>{$('onSt').textContent=e.type==='peer-unavailable'?'No se encuentra esa sala.':'Error de conexión: '+e.type})}
+
+/* ---------- botones ---------- */
+$('tMouse').onclick=()=>setTab('mouse');$('tCats').onclick=()=>setTab('cats');$('tLocal').onclick=()=>setTab('local');$('tOn').onclick=()=>setTab('online');
+$('d0').onclick=()=>setDiff(0);$('d1').onclick=()=>setDiff(1);
+$('bHost').onclick=host;$('bJoin').onclick=join;
+$('bNew').onclick=again;$('bAgain').onclick=again;$('bUndo').onclick=undo;
+$('bYes').onclick=()=>{hideAsk();if(conn&&conn.open){conn.send({t:'r',n:gno});newGame()}};
+$('bNo').onclick=()=>{hideAsk();if(conn&&conn.open)conn.send({t:'no'})};
+$('rules').addEventListener('toggle',()=>requestAnimationFrame(resize));
+setTab('mouse');resize();
+if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
